@@ -1,10 +1,13 @@
+ObjC.import('Foundation');
+ObjC.import('AppKit');
+ObjC.import('stdlib');
+
 const app = Application.currentApplication();
 app.includeStandardAdditions = true;
 const sysApp = Application('System Events');
 
 function run(input, parameters) {
-	const testPath = Path('/Users/ketphan02/PhanKiet/test-automator/Test');
-	_run(testPath, parameters)
+	_run(input, parameters)
 }
 
 function _run(input, parameters, relativeParentPath = '') {
@@ -19,6 +22,7 @@ function _run(input, parameters, relativeParentPath = '') {
 		})
 	} else {
 		app.displayNotification(newItemPath + ': ' + relativeParentPath);
+        sendFileToBackend(newItemPath);
 	}
 	return input;
 }
@@ -35,4 +39,14 @@ function isFolder(dirPath) {
 function getFileNameFromPath(path) {
 	const splittedPath = path.split('/');
 	return splittedPath[splittedPath.length - 1];
+}
+
+function sendFileToBackend(filePath) {
+    if (!filePath) {
+        app.displayNotification('No file path provided');
+        return;
+    }
+    const command = `curl -X POST -F "File=@${filePath}" http://localhost:8080/message`;
+    const result = app.doShellScript(command);
+    app.displayNotification(result);
 }
